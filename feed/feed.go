@@ -47,12 +47,6 @@ func (f *Feed[T]) Finish(data T) {
 	close(f.head.ready)
 }
 
-func (f *Feed[T]) Next() *message[T] {
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-	return f.head
-}
-
-func (f *Feed[T]) Wait() chan struct{} {
-	return f.head.ready
+func (f *Feed[T]) Subscribe() *Subscription[T] {
+	return NewSubscription(f)
 }

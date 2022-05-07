@@ -4,7 +4,7 @@ type Subscription[T any] struct {
 	message *message[T]
 }
 
-func NewSubcription[T any](feed *Feed[T]) *Subscription[T] {
+func NewSubscription[T any](feed *Feed[T]) *Subscription[T] {
 	return &Subscription[T]{
 		message: feed.head,
 	}
@@ -14,7 +14,7 @@ func (s *Subscription[T]) Value() T {
 	return s.message.data
 }
 
-func (s *Subscription[T]) Signal() chan struct{} {
+func (s *Subscription[T]) Wait() chan struct{} {
 	return s.message.ready
 }
 

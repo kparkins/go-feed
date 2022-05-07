@@ -11,10 +11,10 @@ func main() {
 	wg := sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		sub := feed.NewSubcription(f)
+		sub := f.Subscribe()
 		go func(thread int, s *feed.Subscription[int]) {
 			for s.HasNext() {
-				<-s.Signal()
+				<-s.Wait()
 				value := s.Value()
 				fmt.Println(value)
 				s.Next()
