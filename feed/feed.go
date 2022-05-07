@@ -3,10 +3,10 @@ package feed
 import "sync"
 
 type message[T any] struct {
-	data  T
-	ready chan struct{}
-	final bool
-	next  *message[T]
+	data     T
+	ready    chan struct{}
+	finished bool
+	next     *message[T]
 }
 
 type Feed[T any] struct {
@@ -17,9 +17,9 @@ type Feed[T any] struct {
 func NewFeed[T any]() *Feed[T] {
 	return &Feed[T]{
 		head: &message[T]{
-			ready: make(chan struct{}),
-			next:  nil,
-			final: false,
+			ready:    make(chan struct{}),
+			next:     nil,
+			finished: false,
 		},
 	}
 }
@@ -40,8 +40,8 @@ func (f *Feed[T]) Finish(data T) {
 	defer f.mutex.Unlock()
 	f.head.data = data
 	f.head.next = &message[T]{
-		ready: make(chan struct{}),
-		final: true,
+		ready:    make(chan struct{}),
+		finished: true,
 	}
 	close(f.head.next.ready)
 	close(f.head.ready)

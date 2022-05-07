@@ -23,5 +23,5 @@ func (s *Subscription[T]) Next() {
 }
 
 func (s *Subscription[T]) HasNext() bool {
-	return !s.message.final
+	return !s.message.finished
 }
