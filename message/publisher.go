@@ -1,4 +1,4 @@
-package feed
+package message
 
 import "sync"
 
@@ -9,13 +9,13 @@ type message[T any] struct {
 	next     *message[T]
 }
 
-type Feed[T any] struct {
+type Publisher[T any] struct {
 	mutex sync.Mutex
 	head  *message[T]
 }
 
-func NewFeed[T any]() *Feed[T] {
-	return &Feed[T]{
+func NewPublisher[T any]() *Publisher[T] {
+	return &Publisher[T]{
 		head: &message[T]{
 			ready:    make(chan struct{}),
 			next:     nil,
@@ -24,7 +24,7 @@ func NewFeed[T any]() *Feed[T] {
 	}
 }
 
-func (f *Feed[T]) Publish(data T) {
+func (f *Publisher[T]) Publish(data T) {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 	f.head.data = data
@@ -35,7 +35,7 @@ func (f *Feed[T]) Publish(data T) {
 	f.head = f.head.next
 }
 
-func (f *Feed[T]) Finish(data T) {
+func (f *Publisher[T]) Finish(data T) {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 	f.head.data = data
@@ -47,6 +47,6 @@ func (f *Feed[T]) Finish(data T) {
 	close(f.head.ready)
 }
 
-func (f *Feed[T]) Subscribe() *Subscription[T] {
-	return NewSubscription(f)
+func (f *Publisher[T]) Subscribe() *Feed[T] {
+	return NewFeed(f)
 }
