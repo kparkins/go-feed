@@ -69,6 +69,7 @@ func main() {
 		cancel()
 	}()
 
+	fmt.Println("starting go-routines...")
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func(wg *sync.WaitGroup) {
