@@ -1,1 +1,3 @@
-# go-feed
+# go-message
+
+Simple messaging in go.
