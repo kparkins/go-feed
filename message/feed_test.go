@@ -11,6 +11,6 @@ func TestFeedPubSubSimple(t *testing.T) {
 	f := message.NewPublisher[int]()
 	sub := f.Subscribe()
 	f.Publish(1)
-	<-sub.Wait()
+	<-sub.Updated()
 	assert.Equal(t, 1, sub.Value())
 }

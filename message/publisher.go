@@ -1,6 +1,8 @@
 package message
 
-import "sync"
+import (
+	"sync"
+)
 
 type message[T any] struct {
 	data     T
@@ -15,12 +17,13 @@ type Publisher[T any] struct {
 }
 
 func NewPublisher[T any]() *Publisher[T] {
+	m := &message[T]{
+		ready:    make(chan struct{}),
+		next:     nil,
+		finished: false,
+	}
 	return &Publisher[T]{
-		head: &message[T]{
-			ready:    make(chan struct{}),
-			next:     nil,
-			finished: false,
-		},
+		head: m,
 	}
 }
 

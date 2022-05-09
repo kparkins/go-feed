@@ -1,7 +1,5 @@
 package message
 
-import "errors"
-
 type Feed[T any] struct {
 	message *message[T]
 }
@@ -16,18 +14,19 @@ func (s *Feed[T]) Value() T {
 	return s.message.data
 }
 
-func (s *Feed[T]) Wait() chan struct{} {
+func (s *Feed[T]) Updated() chan struct{} {
 	return s.message.ready
 }
 
-func (s *Feed[T]) Next() error {
-	if s.message.finished {
-		return errors.New("called Next() on a Finished() feed")
-	}
+func (s *Feed[T]) Next() bool {
 	s.message = s.message.next
-	return nil
+	return s.message.finished
 }
 
-func (s *Feed[T]) HasNext() bool {
+func (s *Feed[T]) Finished() bool {
 	return !s.message.finished
+}
+
+func (s *Feed[T]) Unsubscribe() {
+	s.message = nil
 }
