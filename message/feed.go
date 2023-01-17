@@ -11,20 +11,35 @@ func NewFeed[T any](feed *Publisher[T]) *Feed[T] {
 }
 
 func (s *Feed[T]) Value() T {
-	return s.message.data
+	var value T
+	if s.message != nil {
+		return s.message.data
+	}
+	return value
 }
 
 func (s *Feed[T]) Updated() chan struct{} {
-	return s.message.ready
+	if s.message != nil {
+		return s.message.ready
+	}
+	value := make(chan struct{})
+	close(value)
+	return value
 }
 
 func (s *Feed[T]) Next() bool {
-	s.message = s.message.next
-	return s.message.finished
+	finished := s.message.finished
+	if s.message != nil {
+		s.message = s.message.next
+	}
+	return !finished
 }
 
 func (s *Feed[T]) Finished() bool {
-	return !s.message.finished
+	if s.message != nil {
+		return s.message.finished
+	}
+	return true
 }
 
 func (s *Feed[T]) Unsubscribe() {

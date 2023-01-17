@@ -32,6 +32,8 @@ func main() {
 				for {
 					select {
 					case <-feed.Updated():
+						fmt.Println(feed.Value())
+
 						if !feed.Next() {
 							goto Done
 						}
@@ -48,13 +50,13 @@ func main() {
 				goto Finish
 			default:
 				pub.Publish(i)
-				time.Sleep(time.Millisecond * 10)
+				time.Sleep(time.Millisecond * 100)
 				i++
 			}
 		}
 	Finish:
 		fmt.Printf("reached %d messages sent", i)
-		pub.Finish(11)
+		pub.Finish()
 
 		wg.Done()
 	}(&wg)

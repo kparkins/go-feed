@@ -1,6 +1,7 @@
 package message
 
 import (
+	"errors"
 	"sync"
 )
 
@@ -12,7 +13,7 @@ type message[T any] struct {
 }
 
 type Publisher[T any] struct {
-	mutex sync.Mutex
+	mutex *sync.Mutex
 	head  *message[T]
 }
 
@@ -23,30 +24,31 @@ func NewPublisher[T any]() *Publisher[T] {
 		finished: false,
 	}
 	return &Publisher[T]{
-		head: m,
+		mutex: &sync.Mutex{},
+		head:  m,
 	}
 }
 
-func (f *Publisher[T]) Publish(data T) {
+func (f *Publisher[T]) Publish(data T) error {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
-	f.head.data = data
-	f.head.next = &message[T]{
-		ready: make(chan struct{}),
+	if f.head.finished {
+		return errors.New("tried to publish to finished feed")
 	}
-	close(f.head.ready)
-	f.head = f.head.next
-}
-
-func (f *Publisher[T]) Finish(data T) {
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
 	f.head.data = data
 	f.head.next = &message[T]{
 		ready:    make(chan struct{}),
-		finished: true,
+		finished: false,
 	}
-	close(f.head.next.ready)
+	close(f.head.ready)
+	f.head = f.head.next
+	return nil
+}
+
+func (f *Publisher[T]) Finish() {
+	f.mutex.Lock()
+	defer f.mutex.Unlock()
+	f.head.finished = true
 	close(f.head.ready)
 }
 
