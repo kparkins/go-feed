@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-message/message"
+	"math/rand"
 	"os"
 	"os/signal"
 	"sync"
@@ -15,6 +16,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, syscall.SIGTERM, syscall.SIGINT)
+	pub := message.NewPublisher[int]()
 	go func() {
 		<-sigc
 		cancel()
@@ -23,42 +25,39 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
-	go func(wg *sync.WaitGroup) {
-		pub := message.NewPublisher[int]()
-		for i := 0; i < 10; i++ {
-			wg.Add(1)
-			stream := pub.Subscribe()
-			go func(thread int, feed *message.Feed[int], wg *sync.WaitGroup) {
-				for {
-					select {
-					case <-feed.Updated():
-						fmt.Println(feed.Value())
-
-						if !feed.Next() {
-							goto Done
-						}
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		stream := pub.Subscribe()
+		go func(thread int, feed *message.Feed[int], wg *sync.WaitGroup) {
+			for {
+				select {
+				case <-feed.Updated():
+					time.Sleep(time.Millisecond * time.Duration(rand.Intn(1000)))
+					fmt.Println(feed.Value())
+					if !feed.Next() {
+						goto Done
 					}
 				}
-			Done:
-				wg.Done()
-			}(i, stream, wg)
-		}
-		i := 0
-		for {
-			select {
-			case <-ctx.Done():
-				goto Finish
-			default:
-				pub.Publish(i)
-				time.Sleep(time.Millisecond * 100)
-				i++
 			}
+		Done:
+			wg.Done()
+		}(i, stream, &wg)
+	}
+	i := 0
+	for {
+		select {
+		case <-ctx.Done():
+			pub.Finish()
+			goto Finished
+		default:
+			pub.Publish(i)
+			time.Sleep(time.Millisecond * time.Duration(rand.Intn(1000)))
+			i++
 		}
-	Finish:
-		fmt.Printf("reached %d messages sent", i)
-		pub.Finish()
+	}
+Finished:
+	fmt.Printf("reached %d messages sent", i)
 
-		wg.Done()
-	}(&wg)
+	wg.Done()
 	wg.Wait()
 }

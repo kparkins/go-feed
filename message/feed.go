@@ -22,6 +22,8 @@ func (s *Feed[T]) Updated() chan struct{} {
 	if s.message != nil {
 		return s.message.ready
 	}
+	// if we have unsubscribed, return a closed channel so the
+	// client is immediately unblocked
 	value := make(chan struct{})
 	close(value)
 	return value
@@ -29,18 +31,18 @@ func (s *Feed[T]) Updated() chan struct{} {
 
 func (s *Feed[T]) Next() bool {
 	if s.message == nil {
-		return true
+		return false
 	}
-	finished := s.message.finished	
-	s.message = s.message.next	
+	finished := s.message.finished
+	s.message = s.message.next
 	return !finished
 }
 
 func (s *Feed[T]) Finished() bool {
 	if s.message != nil {
-		return s.message.finished
+		return true
 	}
-	return true
+	return s.message.finished
 }
 
 func (s *Feed[T]) Unsubscribe() {
