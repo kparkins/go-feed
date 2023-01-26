@@ -28,10 +28,10 @@ func (s *Feed[T]) Updated() chan struct{} {
 }
 
 func (s *Feed[T]) Next() bool {
-	finished := s.message.finished
-	if s.message != nil {
-		s.message = s.message.next
-	}
+	if s.message == nil {
+		return true
+	finished := s.message.finished	
+	s.message = s.message.next	
 	return !finished
 }
 
