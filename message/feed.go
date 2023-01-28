@@ -39,7 +39,7 @@ func (s *Feed[T]) Next() bool {
 }
 
 func (s *Feed[T]) Finished() bool {
-	if s.message != nil {
+	if s.message == nil {
 		return true
 	}
 	return s.message.finished
