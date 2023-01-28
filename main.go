@@ -56,7 +56,6 @@ func main() {
 	}()
 	fmt.Println("starting go-routines...")
 	wg := sync.WaitGroup{}
-	wg.Add(1)
 
 	for i := 0; i < 5; i++ {
 		wg.Add(1)
