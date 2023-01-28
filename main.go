@@ -63,6 +63,7 @@ func main() {
 		go RunSubscriber(i, stream, &wg)
 	}
 
+	wg.Add(1)
 	go Publish(ctx, &wg, pub)
 	wg.Wait()
 }
